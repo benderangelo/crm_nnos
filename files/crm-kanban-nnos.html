@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Kanban - NNOS</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .kanban-column {
+            min-height: 500px;
+        }
+
+        .lead-card {
+            transition: all 0.2s ease;
+        }
+
+        .lead-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 75, 135, 0.15);
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .drag-over {
+            background-color: rgba(0, 75, 135, 0.05);
+            border: 2px dashed #004B87;
+        }
+
+        .stage-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const CRMKanban = () => {
+            const [leads, setLeads] = useState([
+                { id: 1, empresa: 'Construtora Silva', contato: 'João Silva', telefone: '(37) 99999-1111', valor: 85000, etapa: 'novo', dias: 2, proximaAcao: '10/01' },
+                { id: 2, empresa: 'Auto Peças Brasil', contato: 'Maria Santos', telefone: '(37) 99999-2222', valor: 45000, etapa: 'novo', dias: 5, proximaAcao: '12/01' },
+                { id: 3, empresa: 'Logística Express', contato: 'Carlos Oliveira', telefone: '(37) 99999-3333', valor: 120000, etapa: 'contato', dias: 8, proximaAcao: '09/01' },
+                { id: 4, empresa: 'Metalúrgica XYZ', contato: 'Ana Costa', telefone: '(37) 99999-4444', valor: 95000, etapa: 'contato', dias: 12, proximaAcao: '11/01' },
+                { id: 5, empresa: 'Tech Solutions', contato: 'Pedro Alves', telefone: '(37) 99999-5555', valor: 150000, etapa: 'proposta', dias: 15, proximaAcao: '08/01' },
+                { id: 6, empresa: 'Indústria ABC', contato: 'Lucia Ferreira', telefone: '(37) 99999-6666', valor: 200000, etapa: 'negociacao', dias: 20, proximaAcao: '10/01' },
+            ]);
+
+            const [draggedLead, setDraggedLead] = useState(null);
+            const [dragOverStage, setDragOverStage] = useState(null);
+
+            const etapas = [
+                { id: 'novo', nome: 'Novo Lead', cor: 'bg-blue-600', icon: '🎯' },
+                { id: 'contato', nome: 'Em Contato', cor: 'bg-orange-500', icon: '💬' },
+                { id: 'proposta', nome: 'Proposta Enviada', cor: 'bg-purple-600', icon: '📋' },
+                { id: 'negociacao', nome: 'Negociação', cor: 'bg-yellow-600', icon: '🤝' },
+                { id: 'fechado', nome: 'Fechado', cor: 'bg-green-600', icon: '✅' },
+            ];
+
+            const handleDragStart = (e, lead) => {
+                setDraggedLead(lead);
+                e.dataTransfer.effectAllowed = 'move';
+            };
+
+            const handleDragEnd = () => {
+                setDraggedLead(null);
+                setDragOverStage(null);
+            };
+
+            const handleDragOver = (e, etapaId) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                setDragOverStage(etapaId);
+            };
+
+            const handleDragLeave = () => {
+                setDragOverStage(null);
+            };
+
+            const handleDrop = (e, novaEtapa) => {
+                e.preventDefault();
+                if (draggedLead && draggedLead.etapa !== novaEtapa) {
+                    setLeads(leads.map(lead =>
+                        lead.id === draggedLead.id
+                            ? { ...lead, etapa: novaEtapa, dias: 0 }
+                            : lead
+                    ));
+                }
+                setDragOverStage(null);
+            };
+
+            const getLeadsByEtapa = (etapaId) => {
+                return leads.filter(lead => lead.etapa === etapaId);
+            };
+
+            const getTotalByEtapa = (etapaId) => {
+                return getLeadsByEtapa(etapaId).reduce((sum, lead) => sum + lead.valor, 0);
+            };
+
+            const formatMoney = (valor) => {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                    minimumFractionDigits: 0
+                }).format(valor);
+            };
+
+            const getDiasColor = (dias) => {
+                if (dias <= 7) return 'text-green-600';
+                if (dias <= 14) return 'text-yellow-600';
+                return 'text-red-600';
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    {/* Header */}
+                    <header className="bg-white shadow-sm border-b border-gray-200">
+                        <div className="max-w-[1600px] mx-auto px-6 py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center">
+                                        <svg viewBox="0 0 24 24" className="w-7 h-7 text-white" fill="currentColor">
+                                            <path d="M12 2L4 7v10c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V7l-8-5zm0 18c-3.31-1.05-6-5.2-6-9V8.5l6-3.5 6 3.5V11c0 3.8-2.69 7.95-6 9z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-900">NNOS</h1>
+                                        <p className="text-sm text-gray-500">Pipeline Comercial</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right">
+                                        <p className="text-sm text-gray-500">Total em Pipeline</p>
+                                        <p className="text-2xl font-bold text-blue-900">
+                                            {formatMoney(leads.reduce((sum, lead) => sum + lead.valor, 0))}
+                                        </p>
+                                    </div>
+                                    <button className="px-6 py-3 bg-gradient-to-r from-blue-900 to-blue-700 text-gray rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2">
+                                        <span className="text-xl">+</span>
+                                        Novo Lead
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Kanban Board */}
+                    <div className="max-w-[1600px] mx-auto px-6 py-8">
+                        <div className="grid grid-cols-5 gap-4">
+                            {etapas.map(etapa => (
+                                <div key={etapa.id} className="flex flex-col">
+                                    {/* Column Header */}
+                                    <div className={`${etapa.cor} text-gray rounded-t-lg p-4`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl">{etapa.icon}</span>
+                                                <h3 className="font-semibold text-sm uppercase tracking-wide">
+                                                    {etapa.nome}
+                                                </h3>
+                                            </div>
+                                            <span className="bg-white bg-opacity-30 px-2 py-1 rounded-full text-xs font-bold">
+                                                {getLeadsByEtapa(etapa.id).length}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs font-semibold opacity-90">
+                                            {formatMoney(getTotalByEtapa(etapa.id))}
+                                        </p>
+                                    </div>
+
+                                    {/* Drop Zone */}
+                                    <div
+                                        className={`kanban-column bg-gray-100 rounded-b-lg p-3 space-y-3 ${dragOverStage === etapa.id ? 'drag-over' : ''
+                                            }`}
+                                        onDragOver={(e) => handleDragOver(e, etapa.id)}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={(e) => handleDrop(e, etapa.id)}
+                                    >
+                                        {getLeadsByEtapa(etapa.id).map(lead => (
+                                            <div
+                                                key={lead.id}
+                                                draggable
+                                                onDragStart={(e) => handleDragStart(e, lead)}
+                                                onDragEnd={handleDragEnd}
+                                                className={`lead-card bg-white rounded-lg p-4 shadow-sm border border-gray-200 cursor-move ${draggedLead?.id === lead.id ? 'dragging' : ''
+                                                    }`}
+                                            >
+                                                {/* Card Header */}
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <h4 className="font-semibold text-gray-900 text-sm leading-tight pr-2">
+                                                        {lead.empresa}
+                                                    </h4>
+                                                    <span className={`${getDiasColor(lead.dias)} text-xs font-bold whitespace-nowrap`}>
+                                                        {lead.dias}d
+                                                    </span>
+                                                </div>
+
+                                                {/* Contact Info */}
+                                                <div className="space-y-1 mb-3">
+                                                    <p className="text-xs text-gray-600 flex items-center gap-1">
+                                                        <span>👤</span>
+                                                        {lead.contato}
+                                                    </p>
+                                                    <p className="text-xs text-gray-600 flex items-center gap-1">
+                                                        <span>📞</span>
+                                                        {lead.telefone}
+                                                    </p>
+                                                </div>
+
+                                                {/* Value & Next Action */}
+                                                <div className="pt-3 border-t border-gray-100">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-lg font-bold text-blue-900">
+                                                            {formatMoney(lead.valor)}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                                                            <span>📅</span>
+                                                            {lead.proximaAcao}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Quick Actions */}
+                                                <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                                                    <button className="flex-1 py-2 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded text-xs font-semibold hover:shadow-md transition-all">
+                                                        📞 Ligar
+                                                    </button>
+                                                    <button className="flex-1 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded text-xs font-semibold hover:shadow-md transition-all">
+                                                        💬 WhatsApp
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {getLeadsByEtapa(etapa.id).length === 0 && (
+                                            <div className="text-center py-8 text-gray-400 text-sm">
+                                                Arraste leads para cá
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Stats Footer */}
+                    <div className="max-w-[1600px] mx-auto px-6 py-4">
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div className="grid grid-cols-5 gap-6">
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-500 mb-1">Taxa de Conversão</p>
+                                    <p className="text-2xl font-bold text-blue-900">24%</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-500 mb-1">Ticket Médio</p>
+                                    <p className="text-2xl font-bold text-blue-900">
+                                        {formatMoney(leads.reduce((sum, lead) => sum + lead.valor, 0) / leads.length)}
+                                    </p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-500 mb-1">Ciclo Médio</p>
+                                    <p className="text-2xl font-bold text-blue-900">18 dias</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-500 mb-1">Leads Ativos</p>
+                                    <p className="text-2xl font-bold text-blue-900">{leads.length}</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-500 mb-1">Meta Mensal</p>
+                                    <p className="text-2xl font-bold text-green-600">78%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<CRMKanban />, document.getElementById('root'));
+    </script>
+</body>
+
+</html>

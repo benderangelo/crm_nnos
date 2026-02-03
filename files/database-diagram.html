@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama do Banco de Dados - CRM NNOS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #004B87;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .diagram {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .table-box {
+            background: white;
+            border: 3px solid #004B87;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 75, 135, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .table-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 75, 135, 0.25);
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #004B87 0%, #0066b3 100%);
+            color: white;
+            padding: 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .table-header .icon {
+            font-size: 1.3rem;
+        }
+        
+        .table-content {
+            padding: 15px;
+        }
+        
+        .field {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+        }
+        
+        .field:last-child {
+            border-bottom: none;
+        }
+        
+        .field-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .field-type {
+            color: #666;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+        
+        .pk {
+            background: #ffd700;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        
+        .fk {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        
+        .relationships {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        .relationships h2 {
+            color: #004B87;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .relationship {
+            background: white;
+            border-left: 4px solid #004B87;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .relationship strong {
+            color: #004B87;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .core {
+            border-color: #004B87;
+        }
+        
+        .related {
+            border-color: #ff8c42;
+        }
+        
+        .audit {
+            border-color: #7b68ee;
+        }
+        
+        @media (max-width: 1024px) {
+            .diagram {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .diagram {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ CRM NNOS - Estrutura do Banco de Dados</h1>
+        <p class="subtitle">Diagrama Entidade-Relacionamento | Supabase PostgreSQL</p>
+        
+        <div class="diagram">
+            <!-- AUTH USERS (Supabase) -->
+            <div class="table-box core">
+                <div class="table-header">
+                    <span class="icon">🔐</span>
+                    <span>auth.users</span>
+                </div>
+                <div class="table-content">
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="pk">PK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">email</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">encrypted_password</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">created_at</span>
+                        <span class="field-type">TIMESTAMPTZ</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- USERS PROFILE -->
+            <div class="table-box core">
+                <div class="table-header">
+                    <span class="icon">👤</span>
+                    <span>users_profile</span>
+                </div>
+                <div class="table-content">
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="pk">PK</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">nome_completo</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">telefone</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">cargo</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">avatar_url</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">ativo</span>
+                        <span class="field-type">BOOLEAN</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LEADS -->
+            <div class="table-box core">
+                <div class="table-header">
+                    <span class="icon">🎯</span>
+                    <span>leads</span>
+                </div>
+                <div class="table-content">
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="pk">PK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">empresa</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">contato_nome</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">contato_telefone</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">contato_email</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">valor_estimado</span>
+                        <span class="field-type">DECIMAL</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">etapa</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">responsavel_id</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">proxima_acao_data</span>
+                        <span class="field-type">DATE</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">tags</span>
+                        <span class="field-type">TEXT[]</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">ativo</span>
+                        <span class="field-type">BOOLEAN</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- INTERACOES -->
+            <div class="table-box related">
+                <div class="table-header">
+                    <span class="icon">💬</span>
+                    <span>interacoes</span>
+                </div>
+                <div class="table-content">
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="pk">PK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">lead_id</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">usuario_id</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">tipo</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">titulo</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">descricao</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">duracao_minutos</span>
+                        <span class="field-type">INTEGER</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">resultado</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ANEXOS -->
+            <div class="table-box related">
+                <div class="table-header">
+                    <span class="icon">📎</span>
+                    <span>anexos</span>
+                </div>
+                <div class="table-content">
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="pk">PK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">lead_id</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">usuario_id</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">nome_arquivo</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">tipo_arquivo</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">url_storage</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">tipo_documento</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MUDANCAS ETAPA -->
+            <div class="table-box audit">
+                <div class="table-header">
+                    <span class="icon">📊</span>
+                    <span>mudancas_etapa</span>
+                </div>
+                <div class="table-content">
+                    <div class="field">
+                        <span class="field-name">id</span>
+                        <span class="pk">PK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">lead_id</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">usuario_id</span>
+                        <span class="fk">FK</span>
+                        <span class="field-type">UUID</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">etapa_anterior</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">etapa_nova</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">tempo_na_etapa_anterior</span>
+                        <span class="field-type">INTERVAL</span>
+                    </div>
+                    <div class="field">
+                        <span class="field-name">observacao</span>
+                        <span class="field-type">TEXT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="relationships">
+            <h2>🔗 Relacionamentos</h2>
+            
+            <div class="relationship">
+                <strong>auth.users</strong> (1:1) → <strong>users_profile</strong>
+                <br>
+                <small>Cada usuário autenticado tem um perfil complementar</small>
+            </div>
+            
+            <div class="relationship">
+                <strong>users_profile</strong> (1:N) → <strong>leads</strong>
+                <br>
+                <small>Um usuário pode ser responsável por vários leads</small>
+            </div>
+            
+            <div class="relationship">
+                <strong>leads</strong> (1:N) → <strong>interacoes</strong>
+                <br>
+                <small>Um lead pode ter várias interações (notas, ligações, emails)</small>
+            </div>
+            
+            <div class="relationship">
+                <strong>leads</strong> (1:N) → <strong>anexos</strong>
+                <br>
+                <small>Um lead pode ter vários anexos (propostas, contratos)</small>
+            </div>
+            
+            <div class="relationship">
+                <strong>leads</strong> (1:N) → <strong>mudancas_etapa</strong>
+                <br>
+                <small>Um lead gera várias mudanças de etapa ao longo do ciclo de vendas</small>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div style="width: 20px; height: 20px; background: #004B87; border-radius: 4px;"></div>
+                <span>Tabelas Core (Principais)</span>
+            </div>
+            <div class="legend-item">
+                <div style="width: 20px; height: 20px; background: #ff8c42; border-radius: 4px;"></div>
+                <span>Tabelas Relacionadas</span>
+            </div>
+            <div class="legend-item">
+                <div style="width: 20px; height: 20px; background: #7b68ee; border-radius: 4px;"></div>
+                <span>Tabelas de Auditoria</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

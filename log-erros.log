@@ -1,0 +1,49 @@
+useLeads.ts:212 🔵 Iniciando soft delete do lead: 2052e994-ef6b-422c-893d-2e58ef36fc6a
+index.mjs:157  PATCH https://vppkyondwmabmtcbavcl.supabase.co/rest/v1/leads?id=eq.2052e994-ef6b-422c-893d-2e58ef36fc6a 403 (Forbidden)
+eval @ index.mjs:157
+eval @ index.mjs:171
+await in eval
+then @ index.mjs:94
+useLeads.ts:219 🔵 Resultado do UPDATE: {data: null, error: {…}, sql: "UPDATE leads SET ativo = false WHERE id = '2052e994-ef6b-422c-893d-2e58ef36fc6a'"}
+useLeads.ts:226 🔵 Erro detalhado: {code: '42501', message: 'new row violates row-level security policy for table "leads"', details: null, hint: null}
+window.console.error @ app-index.js:33
+console.error @ hydration-error-info.js:63
+deleteLead @ useLeads.ts:226
+await in deleteLead
+handleDelete @ DeleteLeadDialog.tsx:37
+handleEvent @ index.mjs:14
+callCallback @ react-dom.development.js:20565
+invokeGuardedCallbackImpl @ react-dom.development.js:20614
+invokeGuardedCallback @ react-dom.development.js:20689
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:20703
+executeDispatch @ react-dom.development.js:32128
+processDispatchQueueItemsInOrder @ react-dom.development.js:32160
+processDispatchQueue @ react-dom.development.js:32173
+dispatchEventsForPlugins @ react-dom.development.js:32184
+eval @ react-dom.development.js:32374
+batchedUpdates$1 @ react-dom.development.js:24953
+batchedUpdates @ react-dom.development.js:28844
+dispatchEventForPluginEventSystem @ react-dom.development.js:32373
+dispatchEvent @ react-dom.development.js:30141
+dispatchDiscreteEvent @ react-dom.development.js:30112
+useLeads.ts:245 🔴 Erro ao deletar lead: {code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "leads"'}
+window.console.error @ app-index.js:33
+console.error @ hydration-error-info.js:63
+deleteLead @ useLeads.ts:245
+await in deleteLead
+handleDelete @ DeleteLeadDialog.tsx:37
+handleEvent @ index.mjs:14
+callCallback @ react-dom.development.js:20565
+invokeGuardedCallbackImpl @ react-dom.development.js:20614
+invokeGuardedCallback @ react-dom.development.js:20689
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:20703
+executeDispatch @ react-dom.development.js:32128
+processDispatchQueueItemsInOrder @ react-dom.development.js:32160
+processDispatchQueue @ react-dom.development.js:32173
+dispatchEventsForPlugins @ react-dom.development.js:32184
+eval @ react-dom.development.js:32374
+batchedUpdates$1 @ react-dom.development.js:24953
+batchedUpdates @ react-dom.development.js:28844
+dispatchEventForPluginEventSystem @ react-dom.development.js:32373
+dispatchEvent @ react-dom.development.js:30141
+dispatchDiscreteEvent @ react-dom.development.js:30112
