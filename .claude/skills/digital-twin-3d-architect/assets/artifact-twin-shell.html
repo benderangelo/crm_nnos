@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Twin 3D — Consola Operacional ISA-101</title>
+  <style>
+    :root {
+      --bg-viewport: #dfe3e8;
+      --surface-hud: rgba(248, 250, 252, 0.94);
+      --border-hud: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-muted: #475569;
+      --action-blue: #1a73e8;
+      --alarm-crit: #d93025;
+      --alarm-high: #fa903e;
+      --alarm-warn: #f9ab00;
+      --state-run: #1e8e3e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Tahoma, Arial, system-ui, sans-serif;
+      background: var(--bg-viewport);
+      color: var(--text-primary);
+      overflow: hidden;
+      font-variant-numeric: tabular-nums;
+    }
+    #canvas-container { position: fixed; inset: 0; z-index: 1; }
+    .hud-header {
+      position: fixed; top: 12px; left: 12px; right: 12px; height: 48px;
+      background: var(--surface-hud); border: 1px solid var(--border-hud);
+      border-radius: 6px; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 16px; z-index: 10;
+    }
+    .hud-sidebar {
+      position: fixed; top: 72px; right: 12px; bottom: 68px; width: 320px;
+      background: var(--surface-hud); border: 1px solid var(--border-hud);
+      border-radius: 6px; padding: 16px; overflow-y: auto; z-index: 10;
+    }
+    .hud-bottombar {
+      position: fixed; bottom: 12px; left: 12px; right: 12px; height: 44px;
+      background: var(--surface-hud); border: 1px solid var(--border-hud);
+      border-radius: 6px; display: flex; align-items: center; gap: 12px;
+      padding: 0 16px; z-index: 10; overflow-x: auto;
+    }
+    button.ctrl-btn {
+      background: #ffffff; border: 1px solid var(--border-hud); color: var(--text-primary);
+      padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;
+      white-space: nowrap;
+    }
+    button.ctrl-btn[aria-pressed="true"] {
+      background: var(--action-blue); color: #ffffff; border-color: var(--action-blue);
+    }
+    button.ctrl-btn:focus-visible { outline: 2px solid var(--action-blue); outline-offset: 2px; }
+    @media (max-width: 720px) {
+      .hud-sidebar { top: auto; bottom: 68px; left: 12px; right: 12px; width: auto; height: 30vh; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="hud-header" role="banner">
+    <nav aria-label="Hierarquia ISA-101">Planta Principal › Área 01 › <strong>Unidade Ativa</strong></nav>
+    <div id="plant-clock" aria-live="off">--:--:-- UTC</div>
+  </header>
+
+  <main id="canvas-container" aria-label="Visor Espacial 3D do Gémeo Digital"></main>
+
+  <aside class="hud-sidebar" aria-label="Telemetria Exata e Diagnóstico 2D">
+    <h2 style="font-size: 15px; margin-bottom: 12px;">Telemetria da Unidade Selecionada</h2>
+    <div id="telemetry-readout">Selecione um equipamento no visor 3D ou na lista abaixo.</div>
+  </aside>
+
+  <footer class="hud-bottombar" role="contentinfo">
+    <button class="ctrl-btn" id="btn-reset-cam" type="button">Vista Global</button>
+    <button class="ctrl-btn" id="btn-section" type="button" aria-pressed="false">Corte Transversal</button>
+    <button class="ctrl-btn" id="btn-explode" type="button" aria-pressed="false">Vista Explodida</button>
+    <button class="ctrl-btn" id="btn-xray" type="button" aria-pressed="false">Modo Raio-X</button>
+  </footer>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xdfe3e8);
+    scene.fog = new THREE.FogExp2(0xdfe3e8, 0.008);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.2, 500);
+    camera.position.set(18, 14, 22);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, stencil: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.localClippingEnabled = true;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.maxPolarAngle = Math.PI * 0.49;
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x94a3b8, 0.85);
+    scene.add(hemiLight);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    keyLight.position.set(20, 35, 20);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    scene.add(keyLight);
+
+    const timer = new THREE.Timer();
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const clockEl = document.getElementById('plant-clock');
+    setInterval(() => { clockEl.textContent = new Date().toISOString().slice(11, 19) + ' UTC'; }, 1000);
+
+    function animate(timestamp) {
+      requestAnimationFrame(animate);
+      timer.update(timestamp);
+      const delta = timer.getDelta();
+      if (!prefersReducedMotion) {
+        // Atualizar simulação DES, cinemática ou shaders usando buffers pré-alocados (delta em segundos)
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

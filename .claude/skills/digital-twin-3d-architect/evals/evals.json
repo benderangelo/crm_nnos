@@ -1,0 +1,20 @@
+{
+  "skill_name": "digital-twin-3d-architect",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Cria num único Artifact HTML o gémeo digital de uma linha de produção automóvel (estampagem, soldadura, pintura, montagem) com simulação DES, deteção de gargalos, OEE no HUD e tubagens identificadas segundo ASME A13.1.",
+      "expected_output": "HTML único com importmap three@0.186.0, DES no browser, HUD 2D com OEE/throughput, bottleneck destacado em laranja/vermelho, tubagens com cores ASME e setas de fluxo, zero erros de consola."
+    },
+    {
+      "id": 2,
+      "prompt": "Quero ver uma cava de mineração a céu aberto com uma frota de camiões e escavadoras, mostrando o ciclo de transporte e alertas.",
+      "expected_output": "Terreno procedural com bancadas, haul routes e stockpiles; camiões em InstancedMesh com haul cycle simulado; alarmes ISA-101 numa faixa persistente."
+    },
+    {
+      "id": 3,
+      "prompt": "Mostra as zonas quentes da sala de servidores em 3D e liga isso a uma visualização da inferência de um LLM a correr nesses racks.",
+      "expected_output": "Racks/servidores em InstancedMesh, mapa térmico com escala percetualmente uniforme, corredores quente/frio, painel 2D de métricas e vista 3D da arquitetura Transformer/pipeline de inferência."
+    }
+  ]
+}
