@@ -102,6 +102,16 @@ pedido → Código). Declare no início uma paleta de 4 a 6 tokens hexadecimais.
      decorativas, numeração 01/02/03 em conteúdo não sequencial e animações contínuas em estado estacionário.
    - Use tipografia sans-serif limpa com `font-variant-numeric: tabular-nums` em contadores ao vivo e
      respeite `prefers-reduced-motion` e foco de teclado visível.
+4. **Camada Executiva, Linha do Tempo e Postura Consultiva:**
+   - **Visão Estratégica (Camada 4 no HUD 2D):** Sempre que aplicável ao domínio, inclua uma aba
+     executiva traduzindo a operação física em impacto de CAPEX/OPEX, ROI, consumo energético/ESG e
+     conformidade normativa (ISO 19650 em BIM, NRs/OSHA em segurança operacional, ISA-101 e ASME A13.1).
+   - **Time Machine (Slider Temporal):** Quando houver simulação dinâmica, ofereça no rodapé um
+     controle temporal com três modos: Histórico (Replay), Tempo Real (Live) e Projeção What-If /
+     Preditiva.
+   - **Postura Crítica de Engenharia:** Se o layout, fluxo ou arquitetura proposto pelo utilizador
+     apresentar gargalos óbvios, riscos normativos ou ineficiência de GPU (como renderizar elementos
+     microscópicos sem LOD), implemente de forma otimizada e aponte objetivamente a melhoria adotada.
 
 ## Fase 4: Regras Determinísticas de Código 3D (Three.js r186+ / WebGPU)
 
