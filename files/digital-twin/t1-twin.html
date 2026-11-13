@@ -269,8 +269,19 @@ const TEXDATA = {};
 const TEXMAP = { mat_T10003: [['map', 'T10001']], mat_T10008: [['map', 'T10001']], mat_T10006: [['map', 'T10002']], mat_T10010: [['map', 'T10003']], mat_T10011: [['alphaMap', 'T10004']],
   mat_T10013: [['map', 'T10006']], mat_T10017: [['map', 'T10007'], ['alphaMap', 'T10008']], mat_T10019: [['map', 'T10009']], mat_T10020: [['map', 'T10010']], mat_T10028: [['map', 'T10013']], mat_T10032: [['map', 'T10015']] };
 const TLD = new THREE.TextureLoader(), TCACHE = {}, MCACHE = {};
-const tex = (k, srgb) => TCACHE[k + srgb] || (TCACHE[k + srgb] = (() => { const t = TLD.load(TEXDATA[k]); t.flipY = false; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; })());
-function texturedMat(fbxName, base) { const tm = TEXMAP[fbxName]; if (!tm || !tm.every(([, f]) => TEXDATA[f])) return base;
+// texturas recriadas por código a partir das imagens de referência (usadas enquanto o ficheiro original não estiver embutido)
+const cvs = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return c; };
+const PROCTEX = {
+  T10002: () => cvs(512, 512, (g, w, h) => { g.fillStyle = '#1c1d1f'; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 16) { g.fillStyle = '#8d9196'; g.fillRect(0, y, w, 2.2); g.strokeStyle = 'rgba(160,165,170,.55)'; g.lineWidth = .8;
+    g.beginPath(); for (let x = 0; x < w; x += 3) { g.moveTo(x, y + 3); g.quadraticCurveTo(x + 1.5, y + 9, x, y + 15); } g.stroke(); } }),
+  T10010: () => cvs(256, 256, (g, w, h) => { g.fillStyle = '#cfcfcd'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(120,120,118,.28)'; g.lineWidth = 1;
+    for (let k = -h; k < w; k += 4) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k + h * .45, h); g.stroke(); } const id = g.getImageData(0, 0, w, h), d = id.data;
+    for (let i = 0; i < d.length; i += 4) { const n = (Math.random() - .5) * 14; d[i] += n; d[i + 1] += n; d[i + 2] += n; } g.putImageData(id, 0, 0); }),
+  T10004: () => cvs(256, 256, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#000'; for (let y = 0; y < 13; y++) for (let x = 0; x < 13; x++) { g.beginPath(); g.arc(x * 20 + (y % 2) * 10 + 6, y * 20 + 6, 3.2, 0, 7); g.fill(); } }),
+};
+const texSrc = k => TEXDATA[k] || (PROCTEX[k] ? 'proc' : null);
+const tex = (k, srgb) => TCACHE[k + srgb] || (TCACHE[k + srgb] = (() => { const t = TEXDATA[k] ? TLD.load(TEXDATA[k]) : new THREE.CanvasTexture(PROCTEX[k]()); t.flipY = false; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; })());
+function texturedMat(fbxName, base) { const tm = TEXMAP[fbxName]; if (!tm || !tm.every(([, f]) => texSrc(f))) return base;
   if (MCACHE[fbxName]) return MCACHE[fbxName]; const m = base.clone(); m.name = fbxName;
   for (const [ch, f] of tm) { m[ch] = tex(f, ch === 'map'); if (ch === 'map') m.color.setHex(0xffffff); if (ch === 'alphaMap') { m.transparent = true; m.alphaTest = .02; } }
   if (m.emissive && m.map && base === M.screen) { m.emissiveMap = m.map; m.emissive.setHex(0xffffff); m.emissiveIntensity = .55; }
